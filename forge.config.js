@@ -30,7 +30,7 @@ module.exports = {
       config: {
         repository: {
           owner: 'haroldlabastida29',
-          name: 'haroldlabastida29',
+          name: 'TickTask',
         },
         prerelease: false,
       },

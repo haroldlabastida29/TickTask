@@ -1,7 +1,9 @@
 {
   "name": "ticktask",
+  "productName": "TickTask",
   "version": "1.0.0",
-  "description": "TickTask Application",
+  "description": "Manage your academic tasks efficiently",
+  "author": "Harold L. Labastida",
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",

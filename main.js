@@ -19,9 +19,14 @@ function createWindow() {
     }
   });
 
-  // Load your app through the local server port
   const PORT = process.env.PORT || 3000;
   mainWindow.loadURL(`http://localhost:${PORT}`);
+
+  // Force the window to focus once it's ready to show to prevent input locking
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.focus();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

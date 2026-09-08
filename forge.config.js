@@ -44,7 +44,7 @@ module.exports = {
     {
       name: '@electron-forge/plugin-fuses',
       config: {
-        version: '1.8.0',
+        version: '1',
         runAsNode: false,
         enableCookieEncryption: true,
         enableNodeOptionsEnvironmentVariable: false,

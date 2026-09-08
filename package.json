@@ -1,7 +1,7 @@
 {
   "name": "ticktask",
   "productName": "TickTask",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Manage your academic tasks efficiently",
   "author": "Harold L. Labastida",
   "main": "main.js",

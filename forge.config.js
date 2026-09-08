@@ -29,8 +29,8 @@ module.exports = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'your-github-username',
-          name: 'your-repository-name',
+          owner: 'haroldlabastida29',
+          name: 'haroldlabastida29',
         },
         prerelease: false,
       },

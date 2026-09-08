@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TickTask - Academic Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+</head>
+<body>
+
+  <!-- AUTHENTICATION VIEW -->
+  <section id="auth-container" class="auth-section">
+    <div class="auth-card">
+      <h2>TickTask</h2>
+      <p>Manage your academic tasks efficiently</p>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="active-tab">Login</button>
+        <button id="tab-register">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" autocomplete="off">
+        <div id="login-error-msg" class="error-message"></div>
+
+        <div class="form-group">
+          <label for="login-email">Email or Username</label>
+          <input type="text" id="login-email" required placeholder="student@aics.ph.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="hidden">
+        <div class="form-group">
+          <label for="register-name">Full Name</label>
+          <input type="text" id="register-name" required placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" required placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="text" id="reg-email" required placeholder="student@aics.ph.com">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- MAIN DASHBOARD VIEW -->
+  <div id="dashboard-container" class="dashboard-section hidden">
+    
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <h1>TickTask</h1>
+      <div class="user-profile">
+        <span id="user-display-name">Loading user...</span>
+        <button id="logout-btn" class="btn-secondary">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-content">
+      
+      <!-- Panel 1: Add Task Form -->
+      <section class="card task-form-card">
+        <h3>Add New Task</h3>
+        <form id="add-task-form">
+          <div class="form-group">
+            <label for="task-title">Task Title</label>
+            <input type="text" id="task-title" required placeholder="Enter task title...">
+          </div>
+
+          <div class="form-group">
+            <label for="task-subject">Subject</label>
+            <input type="text" id="task-subject" required placeholder="Enter subject...">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-category">Category</label>
+              <select id="task-category" required>
+                <option value="Assignment">Assignment</option>
+                <option value="Laboratory">Laboratory</option>
+                <option value="Project">Project</option>
+                <option value="Quiz/Exam">Quiz/Exam</option>
+                <option value="Study">Study Session</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="task-priority">Priority</label>
+              <select id="task-priority" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Add Task Date Container -->
+          <div class="form-group">
+            <label>Deadline Date</label>
+            <div id="add-date-container" class="triple-date-group">
+              <select class="select-month" required></select>
+              <select class="select-day" required></select>
+              <select class="select-year" required></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="task-description">Description / Instructions</label>
+            <textarea id="task-description" placeholder="Add specific instructions or notes..." rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary">+ Add Task</button>
+        </form>
+      </section>
+
+      <!-- Panel 2: Controls & Task Display Area -->
+      <section class="card task-list-card">
+        
+        <div class="toolbar">
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search by title, subject, category...">
+          </div>
+
+          <div class="filter-box">
+            <select id="filter-status">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            <select id="filter-category">
+              <option value="ALL">All Categories</option>
+              <option value="Assignment">Assignment</option>
+              <option value="Laboratory">Laboratory</option>
+              <option value="Project">Project</option>
+              <option value="Quiz/Exam">Quiz/Exam</option>
+              <option value="Study">Study Session</option>
+            </select>
+          </div>
+
+          <button id="sort-deadline-btn" class="btn-secondary">Sort by Deadline ↑</button>
+        </div>
+
+        <!-- Task List Container -->
+        <div id="task-list" class="task-list"></div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TASK EDIT MODAL OVERLAY -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content card">
+      <h3>Edit Task</h3>
+      <form id="edit-task-form">
+        <input type="hidden" id="edit-task-id">
+
+        <div class="form-group">
+          <label for="edit-task-title">Task Title</label>
+          <input type="text" id="edit-task-title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-task-subject">Subject</label>
+          <input type="text" id="edit-task-subject" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-task-category">Category</label>
+            <select id="edit-task-category" required>
+              <option value="Assignment">Assignment</option>
+              <option value="Laboratory">Laboratory</option>
+              <option value="Project">Project</option>
+              <option value="Quiz/Exam">Quiz/Exam</option>
+              <option value="Study">Study Session</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-task-priority">Priority</label>
+            <select id="edit-task-priority" required>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Modern Separated Date Inputs for Edit Modal -->
+        <div class="form-group">
+          <label>Deadline Date</label>
+          <div id="edit-date-container" class="triple-date-group">
+            <select class="select-month" required></select>
+            <select class="select-day" required></select>
+            <select class="select-year" required></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-task-description">Description / Instructions</label>
+          <textarea id="edit-task-description" rows="3"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" id="close-modal-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="global-loader" class="loading-overlay hidden">
+    <div class="loading-spinner-box">
+      <div class="spinner"></div>
+      <p>Loading your workspace...</p>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

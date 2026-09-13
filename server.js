@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'www')));
+app.use(express.static(path.join(__dirname, 'src')));
+
+// Fallback static handler if files are requested at root instead of src
+app.use(express.static(path.join(__dirname)));
 
 // Initialize Local MariaDB Connection Pool
 const db = mysql.createPool({
@@ -40,9 +43,16 @@ db.getConnection((err, connection) => {
 app.post('/auth.php', (req, res) => {
     const { action, email, password, fullName, username } = req.body;
 
+    if (!action || !email || !password) {
+        return res.status(400).json({ error: 'Missing required fields (action, email, or password).' });
+    }
+
     if (action === 'register') {
         db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('Register DB Error:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
             if (results.length > 0) {
                 return res.status(400).json({ error: 'Email is already registered.' });
             }
@@ -55,7 +65,10 @@ app.post('/auth.php', (req, res) => {
                 'INSERT INTO users (username, email, full_name, password) VALUES (?, ?, ?, ?)',
                 [finalUsername, email, finalFullName, hashedPassword],
                 function (err, result) {
-                    if (err) return res.status(500).json({ error: err.message });
+                    if (err) {
+                        console.error('Insert User Error:', err.message);
+                        return res.status(500).json({ error: err.message });
+                    }
                     return res.json({
                         userId: result.insertId,
                         email: email,
@@ -66,16 +79,21 @@ app.post('/auth.php', (req, res) => {
         });
     } else if (action === 'login') {
         db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], (err, results) => {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('Login DB Error:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
             if (results.length === 0 || !bcrypt.compareSync(password, results[0].password)) {
                 return res.status(401).json({ error: 'Invalid email or password.' });
             }
 
             const user = results[0];
+            const resolvedUserId = user.userId || user.id || user.user_id;
+
             return res.json({
-                userId: user.userId,
+                userId: resolvedUserId,
                 email: user.email,
-                fullName: user.full_name
+                fullName: user.full_name || user.fullName
             });
         });
     } else {
@@ -134,7 +152,9 @@ app.post('/tasks.php', (req, res) => {
 
 app.put('/tasks.php', (req, res) => {
     const data = req.body;
-    if (!data.taskId) {
+    const taskId = data.taskId || req.query.taskId;
+
+    if (!taskId) {
         return res.status(400).json({ error: "Missing taskId" });
     }
 
@@ -152,7 +172,7 @@ app.put('/tasks.php', (req, res) => {
         return res.json({ success: true });
     }
 
-    params.push(data.taskId);
+    params.push(taskId);
     const sql = `UPDATE tasks SET ${fields.join(', ')} WHERE taskId = ?`;
 
     db.query(sql, params, (err) => {

@@ -1,6 +1,6 @@
-// Set this depending on what you are testing:
-// const API_BASE_URL = 'http://10.0.2.2:3000'; // For Android Emulator
-// const API_BASE_URL = 'http://192.168.43.11:3000'; // For Physical Phone (use your PC's actual local IP)
+// TickTask Frontend Application Logic (src/app.js)
+
+const API_BASE_URL = ''; // Default for relative path or same-origin backend
 
 /* ==========================================
    1. CONFIG & DATA MODELS
@@ -13,7 +13,7 @@ const PRIORITY_WEIGHTS = {
 
 class Task {
   constructor(taskId, userId, title, subject, category, deadline, priority, description = "", status = "Pending") {
-    this.taskId = String(taskId); // Force consistency as a string
+    this.taskId = String(taskId);
     this.userId = userId;
     this.title = title;
     this.subject = subject;
@@ -158,7 +158,7 @@ let sortAscending = true;
 let isLoading = false;
 
 /* ==========================================
-   2. EXPRESS BACKEND DATABASE HELPERS
+   2. BACKEND DATABASE HELPERS
    ========================================== */
 async function fetchUserTasksFromFirestore(userId) {
   try {
@@ -222,7 +222,6 @@ async function deleteFirestoreTask(taskId) {
 /* ==========================================
    3. AUTHENTICATION & INITIALIZATION LOGIC
    ========================================== */
-const landingSection = document.getElementById("landing-section");
 const authContainer = document.getElementById("auth-container");
 const dashboardContainer = document.getElementById("dashboard-container");
 const userDisplayName = document.getElementById("user-display-name");
@@ -250,8 +249,8 @@ if (tabLogin) {
   tabLogin.addEventListener("click", () => {
     tabLogin.classList.add("active-tab");
     tabRegister.classList.remove("active-tab");
-    loginForm.classList.remove("hidden");
-    registerForm.classList.add("hidden");
+    if (loginForm) loginForm.classList.remove("hidden");
+    if (registerForm) registerForm.classList.add("hidden");
   });
 }
 
@@ -259,35 +258,22 @@ if (tabRegister) {
   tabRegister.addEventListener("click", () => {
     tabRegister.classList.add("active-tab");
     tabLogin.classList.remove("active-tab");
-    registerForm.classList.remove("hidden");
-    loginForm.classList.add("hidden");
+    if (registerForm) registerForm.classList.remove("hidden");
+    if (loginForm) loginForm.classList.add("hidden");
   });
 }
 
 function initializeApp() {
-  const isMobile = window.innerWidth <= 768;
   const savedUserId = localStorage.getItem("userId");
 
-  if (!savedUserId) {
-    if (isMobile) {
-      if (landingSection) landingSection.classList.add("hidden");
-      if (authContainer) authContainer.classList.remove("hidden");
-      const backBtn = document.getElementById("back-to-landing-btn");
-      if (backBtn) backBtn.style.display = "none";
-    } else {
-      if (landingSection) landingSection.classList.remove("hidden");
-      if (authContainer) authContainer.classList.add("hidden");
-    }
-  }
-
+  if (authContainer) authContainer.classList.remove("hidden");
   if (dashboardContainer) dashboardContainer.classList.add("hidden");
-  
-  document.title = "TickTask | Task Manager";
-  
-  const savedEmail = localStorage.getItem("userEmail");
-  const savedFullName = localStorage.getItem("userFullName") || "";
+
+  document.title = "TickTask | Academic Task Manager";
 
   if (savedUserId) {
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedFullName = localStorage.getItem("userFullName") || "";
     enterDashboard(savedUserId, savedEmail, savedFullName);
   }
 
@@ -309,7 +295,6 @@ async function enterDashboard(userId, email, fullName) {
   localStorage.setItem("userEmail", email || "");
   localStorage.setItem("userFullName", fullName || "");
 
-  if (landingSection) landingSection.classList.add("hidden");
   if (authContainer) authContainer.classList.add("hidden");
   if (dashboardContainer) dashboardContainer.classList.remove("hidden");
   if (userDisplayName) {
@@ -328,7 +313,6 @@ async function enterDashboard(userId, email, fullName) {
   renderUI();
 }
 
-// Handle Login Form Submission
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -389,7 +373,6 @@ if (loginForm) {
   });
 }
 
-// Handle Register Form Submission
 if (registerForm) {
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -447,19 +430,10 @@ if (logoutBtn) {
     localStorage.removeItem("userFullName");
 
     taskManager.loadTasks([]);
+    const taskListContainer = document.getElementById("task-list");
     if (taskListContainer) taskListContainer.innerHTML = "";
     if (dashboardContainer) dashboardContainer.classList.add("hidden");
-    if (authContainer) authContainer.classList.add("hidden");
-    
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      if (landingSection) landingSection.classList.add("hidden");
-      if (authContainer) authContainer.classList.remove("hidden");
-      const backBtn = document.getElementById("back-to-landing-btn");
-      if (backBtn) backBtn.style.display = "none";
-    } else {
-      if (landingSection) landingSection.classList.remove("hidden");
-    }
+    if (authContainer) authContainer.classList.remove("hidden");
     
     clearAuthForms();
 
@@ -624,6 +598,12 @@ if (closeModalBtn) {
     if (editModal) editModal.classList.add("hidden");
   });
 }
+
+window.addEventListener("click", (e) => {
+  if (editModal && e.target === editModal) {
+    editModal.classList.add("hidden");
+  }
+});
 
 if (editTaskForm) {
   editTaskForm.addEventListener("submit", async (e) => {
@@ -797,10 +777,109 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const editDateContainer = document.getElementById("edit-date-container");
   if (editDateContainer) setupTripleDateContainer(editDateContainer);
+
+  // Landing page modal setup integrated cleanly
+  if (!document.getElementById("landing-modal")) {
+    const landingModalHTML = `
+      <div id="landing-modal" class="landing-modal hidden">
+        <div class="landing-modal-box">
+          <div id="landing-modal-body"></div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', landingModalHTML);
+  }
+
+  const modal = document.getElementById("landing-modal");
+
+  const modalContentData = {
+    "The Problem We Solve": {
+      title: "The Problem We Solve",
+      body: "Students struggle to keep track of academic tasks and deadlines because busy schedules cause information to scatter across different sources such as group chats, class portals, notebooks, and paper notes."
+    },
+    "Target Users": {
+      title: "Target Users",
+      body: "• Working & Busy Students: Balancing jobs or heavy workloads.\n• Students Prone to Forgetting: Juggling multiple subjects simultaneously."
+    },
+    "Centralized Authentication": {
+      title: "Centralized Authentication",
+      body: "Secure accounts with isolated data persistence per user, ensuring your task lists and custom preferences remain completely private."
+    },
+    "Hybrid Data Structures": {
+      title: "Hybrid Data Structures",
+      body: "Dynamic arrays combined with Hash Maps for instant lookups, rapid data additions, and smooth client-side performance."
+    },
+    "Linear Search & Filters": {
+      title: "Linear Search & Filters",
+      body: "Quickly search through keywords or filter records instantly by status to locate academic entries in seconds."
+    },
+    "Dual-Criteria Sorting": {
+      title: "Dual-Criteria Sorting",
+      body: "Orders tasks intelligently by combining deadline timestamps and priority weights so you always tackle critical items first."
+    }
+  };
+
+  const featureCards = document.querySelectorAll(".clickable-card");
+  featureCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      if (!modal) return;
+      
+      const titleEl = card.querySelector("h3, h4");
+      const cardTitle = titleEl ? titleEl.textContent.trim() : "Details";
+      
+      const data = modalContentData[cardTitle] || {
+        title: cardTitle,
+        body: "Explore this feature inside your TickTask dashboard to maximize your productivity."
+      };
+
+      const modalBodyDiv = document.getElementById("landing-modal-body");
+      if (modalBodyDiv) {
+        modalBodyDiv.innerHTML = `
+          <h3>${data.title}</h3>
+          <p>${data.body.replace(/\n/g, '<br>')}</p>
+        `;
+      }
+
+      modal.classList.remove("hidden");
+    });
+  });
+
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.add("hidden");
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal && !modal.classList.contains("hidden")) {
+      modal.classList.add("hidden");
+    }
+  });
+
+  // Flowchart Extender Dropdown Logic with Auto-Scroll
+  const extenderBtn = document.getElementById("extender-btn");
+  const extenderContent = document.getElementById("extender-content");
+
+  if (extenderBtn && extenderContent) {
+    extenderBtn.addEventListener("click", () => {
+      extenderContent.classList.toggle("hidden");
+      extenderBtn.classList.toggle("expanded");
+      
+      // Automatically scroll down to the flowchart when opened
+      if (!extenderContent.classList.contains("hidden")) {
+        extenderContent.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    });
+  }
 });
 
 /* ==========================================
-   7. PWA SERVICE WORKER REGISTRATION (Bypassed for Electron file protocol)
+   7. PWA SERVICE WORKER REGISTRATION
    ========================================== */
 if ('serviceWorker' in navigator && !window.location.protocol.includes('file:')) {
   window.addEventListener('load', () => {
@@ -813,75 +892,67 @@ if ('serviceWorker' in navigator && !window.location.protocol.includes('file:'))
 /* ==========================================
    TRIPLE DROPDOWN DATE INITIALIZATION & HANDLERS
    ========================================== */
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-function populateMonthSelector(monthSelect) {
-  if (!monthSelect) return;
-  const currentVal = monthSelect.value;
-  monthSelect.innerHTML = `<option value="" disabled selected>Month</option>`;
-  MONTH_NAMES.forEach((name, index) => {
-    const monthNum = String(index + 1).padStart(2, '0');
-    const opt = document.createElement('option');
-    opt.value = monthNum;
-    opt.textContent = name;
-    monthSelect.appendChild(opt);
+function populateMonthSelector(selectEl) {
+  if (!selectEl) return;
+  if (selectEl.options.length > 1) return;
+  const months = [
+    { value: "01", name: "January" },
+    { value: "02", name: "February" },
+    { value: "03", name: "March" },
+    { value: "04", name: "April" },
+    { value: "05", name: "May" },
+    { value: "06", name: "June" },
+    { value: "07", name: "July" },
+    { value: "08", name: "August" },
+    { value: "09", name: "September" },
+    { value: "10", name: "October" },
+    { value: "11", name: "November" },
+    { value: "12", name: "December" }
+  ];
+  selectEl.innerHTML = `<option value="" disabled selected>Month</option>`;
+  months.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.value;
+    opt.textContent = m.name;
+    selectEl.appendChild(opt);
   });
-  if (currentVal) monthSelect.value = currentVal;
 }
 
-function populateYearSelector(yearSelect) {
-  if (!yearSelect) return;
-  const currentVal = yearSelect.value;
-  yearSelect.innerHTML = `<option value="" disabled selected>Year</option>`;
+function populateYearSelector(selectEl) {
+  if (!selectEl) return;
+  if (selectEl.options.length > 1) return;
   const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y <= currentYear + 5; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
+  selectEl.innerHTML = `<option value="" disabled selected>Year</option>`;
+  for (let y = currentYear; y >= currentYear - 100; y--) {
+    const opt = document.createElement("option");
+    opt.value = String(y);
     opt.textContent = y;
-    yearSelect.appendChild(opt);
+    selectEl.appendChild(opt);
   }
-  if (currentVal) yearSelect.value = currentVal;
 }
 
-function updateDays(container, targetDayVal = null) {
+function updateDays(container, currentSelectedDay = null) {
   const monthSelect = container.querySelector(".select-month");
   const daySelect = container.querySelector(".select-day");
   const yearSelect = container.querySelector(".select-year");
-  if (!monthSelect || !daySelect || !yearSelect) return;
+  if (!daySelect) return;
 
-  const month = parseInt(monthSelect.value, 10);
-  const year = parseInt(yearSelect.value, 10);
+  const month = monthSelect && monthSelect.value ? parseInt(monthSelect.value, 10) : 1;
+  const year = yearSelect && yearSelect.value ? parseInt(yearSelect.value, 10) : new Date().getFullYear();
 
-  let daysInMonth = 31;
-  if (!isNaN(month)) {
-    const calcYear = !isNaN(year) ? year : new Date().getFullYear();
-    daysInMonth = new Date(calcYear, month, 0).getDate();
-  }
-
-  const currentSelectedDay = targetDayVal !== null ? targetDayVal : (daySelect.value || container.dataset.selectedDay || "");
-
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const existingDay = currentSelectedDay || daySelect.value;
+  
   daySelect.innerHTML = `<option value="" disabled selected>Day</option>`;
-  for (let i = 1; i <= daysInMonth; i++) {
-    const dayNum = String(i).padStart(2, '0');
-    const opt = document.createElement('option');
-    opt.value = dayNum;
-    opt.textContent = i;
-    daySelect.appendChild(opt);
-  }
-
-  if (currentSelectedDay) {
-    const paddedDay = String(parseInt(currentSelectedDay, 10)).padStart(2, '0');
-    const numericDay = parseInt(paddedDay, 10);
-    if (!isNaN(numericDay) && numericDay <= daysInMonth) {
-      daySelect.value = paddedDay;
-      container.dataset.selectedDay = paddedDay;
-    } else if (!isNaN(numericDay)) {
-      daySelect.value = String(daysInMonth).padStart(2, '0');
-      container.dataset.selectedDay = daySelect.value;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayStr = String(d).padStart(2, '0');
+    const opt = document.createElement("option");
+    opt.value = dayStr;
+    opt.textContent = d;
+    if (existingDay === dayStr || existingDay === String(d)) {
+      opt.selected = true;
     }
+    daySelect.appendChild(opt);
   }
 }
 
@@ -896,38 +967,50 @@ function setupTripleDateContainer(container) {
   updateDays(container);
 
   if (monthSelect && !monthSelect.dataset.listenerAttached) {
-    monthSelect.addEventListener("change", () => updateDays(container));
     monthSelect.dataset.listenerAttached = "true";
+    monthSelect.addEventListener("change", () => updateDays(container));
   }
-
   if (yearSelect && !yearSelect.dataset.listenerAttached) {
-    yearSelect.addEventListener("change", () => updateDays(container));
     yearSelect.dataset.listenerAttached = "true";
-  }
-
-  if (daySelect && !daySelect.dataset.listenerAttached) {
-    daySelect.addEventListener("change", () => {
-      if (daySelect.value) {
-        container.dataset.selectedDay = daySelect.value;
-      }
-    });
-    daySelect.dataset.listenerAttached = "true";
+    yearSelect.addEventListener("change", () => updateDays(container));
   }
 }
 
 function getTripleDateValue(container) {
   if (!container) return "";
-  const month = container.querySelector(".select-month")?.value || "";
-  let day = container.querySelector(".select-day")?.value || container.dataset.selectedDay || "";
-  const year = container.querySelector(".select-year")?.value || "";
+  const monthSelect = container.querySelector(".select-month");
+  const daySelect = container.querySelector(".select-day");
+  const yearSelect = container.querySelector(".select-year");
 
-  if (!month || !day || !year) return "";
-  const paddedDay = String(parseInt(day, 10)).padStart(2, '0');
-  const paddedMonth = String(parseInt(month, 10)).padStart(2, '0');
-  return `${year}-${paddedMonth}-${paddedDay}`;
+  if (!monthSelect || !daySelect || !yearSelect) return "";
+  const m = monthSelect.value;
+  const d = daySelect.value;
+  const y = yearSelect.value;
+
+  if (!m || !d || !y) return "";
+  return `${y}-${m}-${d}`;
 }
 
-function setTripleDateValue(container, dateString) {
+function setTripleDateValue(container, dateStr) {
   if (!container) return;
-  // ... rest of your code
+  const monthSelect = container.querySelector(".select-month");
+  const daySelect = container.querySelector(".select-day");
+  const yearSelect = container.querySelector(".select-year");
+
+  if (!monthSelect || !daySelect || !yearSelect) return;
+
+  if (!dateStr) {
+    monthSelect.value = "";
+    yearSelect.value = "";
+    daySelect.innerHTML = `<option value="" disabled selected>Day</option>`;
+    return;
+  }
+
+  const cleanDateStr = dateStr.split('T')[0].split(' ')[0];
+  const parts = cleanDateStr.split("-");
+  if (parts.length === 3) {
+    yearSelect.value = parts[0];
+    monthSelect.value = parts[1];
+    updateDays(container, parts[2]);
+  }
 }

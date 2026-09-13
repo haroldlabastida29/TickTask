@@ -10,93 +10,11 @@
 </head>
 <body>
 
-  <!-- ==========================================
-      PROJECT PRESENTATION LANDING PAGE
-      ========================================== -->
-  <section id="landing-section" class="landing-section">
-    <header class="landing-header">
-      <div class="landing-logo">
-        <span class="brand-text">TickTask</span>
-      </div>
-      <nav class="landing-nav">
-        <a href="#home" class="nav-link active">HOME</a>
-        <a href="#features" class="nav-link">SYSTEM FEATURES</a>
-        <a href="#problem" class="nav-link">THE PROBLEM</a>
-        <a href="#users" class="nav-link">TARGET USERS</a>
-        <button id="enter-app-btn" class="nav-login-btn">Login / Register</button>
-      </nav>
-    </header>
-
-    <div id="home" class="landing-hero">
-      <div class="badge-pill">Web-Based Information System Project</div>
-      <h1>TickTask</h1>
-      <p class="landing-tagline">
-        Stop letting deadlines slip through the cracks. Manage all your assignments, laboratory activities, projects, quizzes, examinations, and study sessions in one centralized platform.
-      </p>
-      <div class="landing-cta-group">
-        <button id="enter-app-btn-hero" class="btn-primary" onclick="document.getElementById('enter-app-btn').click();">GET STARTED</button>
-        <a href="#architecture" class="btn-secondary">Explore Architecture</a>
-      </div>
-    </div>
-
-    <div class="landing-grid">
-      
-      <div id="problem" class="landing-card clickable-card" data-modal-target="presentation-modal" data-title="The Problem We Solve" data-content="Students struggle to keep track of academic tasks and deadlines because busy schedules cause information to scatter across different sources such as group chats, class portals, notebooks, and paper notes. Forgetting a critical task or deadline directly impacts academic responsibilities and daily schedules.">
-        <h3>The Problem We Solve</h3>
-        <p>
-          Students struggle to keep track of academic tasks and deadlines because busy schedules cause information to scatter across different sources such as group chats, class portals, notebooks, and paper notes. Forgetting a critical task or deadline directly impacts academic responsibilities and daily schedules.
-        </p>
-      </div>
-
-      <div id="users" class="landing-card clickable-card" data-modal-target="presentation-modal" data-title="Target Users" data-content="<ul><li><strong>Working and Busy Students:</strong> Individuals balancing jobs or heavy extracurricular workloads who need a quick way to track tasks on tight schedules.</li><li><strong>Students Prone to Forgetting:</strong> Learners who lose track of tasks due to stress, multitasking, or juggling multiple subjects simultaneously.</li><li><strong>College Students:</strong> Students looking for a straightforward, reliable system dedicated to managing academic milestones.</li></ul>">
-        <h3>Target Users</h3>
-        <ul>
-          <li><strong>Working and Busy Students:</strong> Individuals balancing jobs or heavy extracurricular workloads who need a quick way to track tasks on tight schedules.</li>
-          <li><strong>Students Prone to Forgetting:</strong> Learners who lose track of tasks due to stress, multitasking, or juggling multiple subjects simultaneously.</li>
-          <li><strong>College Students:</strong> Students looking for a straightforward, reliable system dedicated to managing academic milestones.</li>
-        </ul>
-      </div>
-
-    </div>
-
-    <!-- Features & Architecture Anchor Section -->
-    <div id="architecture"></div>
-    <div id="features" class="landing-features-container">
-      <h3>Core System Features & Architecture</h3>
-      <div class="landing-features-grid">
-        
-        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Centralized Authentication" data-content="Secure accounts where each user's tasks are stored separately in the database. Features isolated data persistence per user profile to protect privacy and ensure structured record management.">
-          <div class="feature-icon">🔐</div>
-          <h4>Centralized Authentication</h4>
-          <p>Secure accounts where each user's tasks are stored separately in the database.</p>
-        </div>
-
-        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Hybrid Data Structures" data-content="Dynamic arrays for sequential lists combined with Hash Maps using task map at task id for instant constant time lookups. This architecture guarantees high computational efficiency during task retrieval and modifications.">
-          <div class="feature-icon">⚡</div>
-          <h4>Hybrid Data Structures</h4>
-          <p>Dynamic arrays for sequential lists combined with Hash Maps using task map at task id for instant constant time lookups.</p>
-        </div>
-
-        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Linear Search & Filters" data-content="Quickly search keywords or filter records instantly by status, category, or priority level. Designed to filter extensive arrays dynamically without lagging the application view.">
-          <div class="feature-icon">🔍</div>
-          <h4>Linear Search & Filters</h4>
-          <p>Quickly search keywords or filter records instantly by status, category, or priority level.</p>
-        </div>
-
-        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Dual-Criteria Sorting" data-content="Automatically orders tasks by deadline timestamps and priority weights where High is valued at 3, Medium is valued at 2, and Low is valued at 1. Ensures academic obligations are systematically prioritized.">
-          <div class="feature-icon">📊</div>
-          <h4>Dual-Criteria Sorting</h4>
-          <p>Automatically orders tasks by deadline timestamps and priority weights where High is valued at 3, Medium is valued at 2, and Low is valued at 1.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <!-- AUTHENTICATION VIEW -->
-  <section id="auth-container" class="auth-section hidden">
+  <section id="auth-container" class="auth-section">
     <div class="auth-card">
-      <button id="back-to-landing-btn" class="back-link-btn">← Back to Home</button>
+      <!-- Directs user back to landing page -->
+      <a href="landing.html" id="back-to-landing-btn" class="back-link-btn" style="text-decoration: none;">← Back to Home</a>
       <h2>TickTask</h2>
       <p>Manage your academic tasks efficiently</p>
 
@@ -107,8 +25,7 @@
 
       <!-- Login Form -->
       <form id="login-form" autocomplete="off">
-        <div id="login-error-msg" class="error-message"></div>
-
+        <div id="login-error-msg" class="error-message" style="display:none;"></div>
         <div class="form-group">
           <label for="login-email">Email or Username</label>
           <input type="text" id="login-email" required placeholder="student@aics.ph.com">
@@ -124,11 +41,11 @@
       <form id="register-form" class="hidden">
         <div class="form-group">
           <label for="register-name">Full Name</label>
-          <input type="text" id="register-name" required placeholder="Enter your full name">
+          <input type="text" id="register-name" required placeholder="Full name">
         </div>
         <div class="form-group">
           <label for="reg-username">Username</label>
-          <input type="text" id="reg-username" required placeholder="Enter your username">
+          <input type="text" id="reg-username" required placeholder="Username">
         </div>
         <div class="form-group">
           <label for="reg-email">Email</label>
@@ -145,8 +62,6 @@
 
   <!-- MAIN DASHBOARD VIEW -->
   <div id="dashboard-container" class="dashboard-section hidden">
-    
-    <!-- Navigation Bar -->
     <header class="navbar">
       <h1>TickTask</h1>
       <div class="user-profile">
@@ -155,10 +70,7 @@
       </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="dashboard-content">
-      
-      <!-- Panel 1: Add Task Form -->
       <section class="card task-form-card">
         <h3>Add New Task</h3>
         <form id="add-task-form">
@@ -166,12 +78,10 @@
             <label for="task-title">Task Title</label>
             <input type="text" id="task-title" required placeholder="Enter task title...">
           </div>
-
           <div class="form-group">
             <label for="task-subject">Subject</label>
             <input type="text" id="task-subject" required placeholder="Enter subject...">
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label for="task-category">Category</label>
@@ -183,7 +93,6 @@
                 <option value="Study">Study Session</option>
               </select>
             </div>
-
             <div class="form-group">
               <label for="task-priority">Priority</label>
               <select id="task-priority" required>
@@ -193,8 +102,6 @@
               </select>
             </div>
           </div>
-
-          <!-- Add Task Date Container -->
           <div class="form-group">
             <label>Deadline Date</label>
             <div id="add-date-container" class="triple-date-group">
@@ -203,31 +110,25 @@
               <select class="select-year" required></select>
             </div>
           </div>
-
           <div class="form-group">
             <label for="task-description">Description / Instructions</label>
             <textarea id="task-description" placeholder="Add specific instructions or notes..." rows="3"></textarea>
           </div>
-
           <button type="submit" class="btn-primary">+ Add Task</button>
         </form>
       </section>
 
-      <!-- Panel 2: Controls & Task Display Area -->
       <section class="card task-list-card">
-        
         <div class="toolbar">
           <div class="search-box">
             <input type="text" id="search-input" placeholder="Search by title, subject, category...">
           </div>
-
           <div class="filter-box">
             <select id="filter-status">
               <option value="ALL">All Statuses</option>
               <option value="Pending">Pending</option>
               <option value="Completed">Completed</option>
             </select>
-
             <select id="filter-category">
               <option value="ALL">All Categories</option>
               <option value="Assignment">Assignment</option>
@@ -237,35 +138,27 @@
               <option value="Study">Study Session</option>
             </select>
           </div>
-
           <button id="sort-deadline-btn" class="btn-secondary">Sort by Deadline ↑</button>
         </div>
-
-        <!-- Task List Container -->
         <div id="task-list" class="task-list"></div>
-
       </section>
-
     </main>
   </div>
 
-  <!-- TASK EDIT MODAL OVERLAY -->
+  <!-- TASK EDIT MODAL -->
   <div id="edit-modal" class="modal hidden">
     <div class="modal-content card modal-styled">
       <h3>Edit Task</h3>
       <form id="edit-task-form">
         <input type="hidden" id="edit-task-id">
-
         <div class="form-group">
           <label for="edit-task-title">Task Title</label>
           <input type="text" id="edit-task-title" required>
         </div>
-
         <div class="form-group">
           <label for="edit-task-subject">Subject</label>
           <input type="text" id="edit-task-subject" required>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label for="edit-task-category">Category</label>
@@ -277,7 +170,6 @@
               <option value="Study">Study Session</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="edit-task-priority">Priority</label>
             <select id="edit-task-priority" required>
@@ -287,8 +179,6 @@
             </select>
           </div>
         </div>
-
-        <!-- Modern Separated Date Inputs for Edit Modal -->
         <div class="form-group">
           <label>Deadline Date</label>
           <div id="edit-date-container" class="triple-date-group">
@@ -297,27 +187,15 @@
             <select class="select-year" required></select>
           </div>
         </div>
-
         <div class="form-group">
           <label for="edit-task-description">Description / Instructions</label>
           <textarea id="edit-task-description" rows="3"></textarea>
         </div>
-
         <div class="modal-actions">
           <button type="submit" class="btn-primary">Save Changes</button>
           <button type="button" id="close-modal-btn" class="btn-secondary">Cancel</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- PRESENTATION MODAL OVERLAY -->
-  <div id="presentation-modal" class="modal hidden">
-    <div class="modal-content card presentation-card modal-styled">
-      <h3 id="presentation-modal-title">Presentation Title</h3>
-      <div id="presentation-modal-body" class="presentation-body">
-        <!-- Content gets injected dynamically -->
-      </div>
     </div>
   </div>
 

@@ -1,6 +1,6 @@
 // Set this depending on what you are testing:
 // const API_BASE_URL = 'http://10.0.2.2:3000'; // For Android Emulator
-const API_BASE_URL = 'http://192.168.43.11:3000'; // For Physical Phone (use your PC's actual local IP)
+// const API_BASE_URL = 'http://192.168.43.11:3000'; // For Physical Phone (use your PC's actual local IP)
 
 /* ==========================================
    1. CONFIG & DATA MODELS

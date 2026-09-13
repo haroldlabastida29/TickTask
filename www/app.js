@@ -1,3 +1,7 @@
+// Set this depending on what you are testing:
+// const API_BASE_URL = 'http://10.0.2.2:3000'; // For Android Emulator
+const API_BASE_URL = 'http://192.168.43.11:3000'; // For Physical Phone (use your PC's actual local IP)
+
 /* ==========================================
    1. CONFIG & DATA MODELS
    ========================================== */
@@ -132,8 +136,8 @@ class TaskManager {
 
   sortByDeadlineAndPriority(taskList, ascending = true) {
     return [...taskList].sort((a, b) => {
-      const dateA = new Date(a.deadline);
-      const dateB = new Date(b.deadline);
+      const dateA = parseLocalDate(a.deadline);
+      const dateB = parseLocalDate(b.deadline);
 
       if (dateA.getTime() !== dateB.getTime()) {
         return ascending ? dateA - dateB : dateB - dateA;
@@ -158,7 +162,7 @@ let isLoading = false;
    ========================================== */
 async function fetchUserTasksFromFirestore(userId) {
   try {
-    const response = await fetch(`./tasks.php?userId=${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/tasks.php?userId=${userId}`, {
       credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to fetch tasks');
@@ -171,7 +175,7 @@ async function fetchUserTasksFromFirestore(userId) {
 }
 
 async function saveTaskToFirestore(taskData) {
-  const response = await fetch('./tasks.php', {
+  const response = await fetch(`${API_BASE_URL}/tasks.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -191,7 +195,7 @@ async function saveTaskToFirestore(taskData) {
 }
 
 async function updateFirestoreTaskData(taskId, updatedFields) {
-  await fetch(`./tasks.php`, {
+  await fetch(`${API_BASE_URL}/tasks.php`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -200,7 +204,7 @@ async function updateFirestoreTaskData(taskId, updatedFields) {
 }
 
 async function updateFirestoreTaskStatus(taskId, newStatus) {
-  await fetch(`./tasks.php`, {
+  await fetch(`${API_BASE_URL}/tasks.php`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -209,7 +213,7 @@ async function updateFirestoreTaskStatus(taskId, newStatus) {
 }
 
 async function deleteFirestoreTask(taskId) {
-  await fetch(`./tasks.php?taskId=${taskId}`, {
+  await fetch(`${API_BASE_URL}/tasks.php?taskId=${taskId}`, {
     method: 'DELETE',
     credentials: 'include'
   });
@@ -218,6 +222,7 @@ async function deleteFirestoreTask(taskId) {
 /* ==========================================
    3. AUTHENTICATION & INITIALIZATION LOGIC
    ========================================== */
+const landingSection = document.getElementById("landing-section");
 const authContainer = document.getElementById("auth-container");
 const dashboardContainer = document.getElementById("dashboard-container");
 const userDisplayName = document.getElementById("user-display-name");
@@ -260,12 +265,25 @@ if (tabRegister) {
 }
 
 function initializeApp() {
-  if (authContainer) authContainer.classList.remove("hidden");
+  const isMobile = window.innerWidth <= 768;
+  const savedUserId = localStorage.getItem("userId");
+
+  if (!savedUserId) {
+    if (isMobile) {
+      if (landingSection) landingSection.classList.add("hidden");
+      if (authContainer) authContainer.classList.remove("hidden");
+      const backBtn = document.getElementById("back-to-landing-btn");
+      if (backBtn) backBtn.style.display = "none";
+    } else {
+      if (landingSection) landingSection.classList.remove("hidden");
+      if (authContainer) authContainer.classList.add("hidden");
+    }
+  }
+
   if (dashboardContainer) dashboardContainer.classList.add("hidden");
   
   document.title = "TickTask | Task Manager";
   
-  const savedUserId = localStorage.getItem("userId");
   const savedEmail = localStorage.getItem("userEmail");
   const savedFullName = localStorage.getItem("userFullName") || "";
 
@@ -291,6 +309,7 @@ async function enterDashboard(userId, email, fullName) {
   localStorage.setItem("userEmail", email || "");
   localStorage.setItem("userFullName", fullName || "");
 
+  if (landingSection) landingSection.classList.add("hidden");
   if (authContainer) authContainer.classList.add("hidden");
   if (dashboardContainer) dashboardContainer.classList.remove("hidden");
   if (userDisplayName) {
@@ -330,7 +349,7 @@ if (loginForm) {
     showLoader(true);
 
     try {
-      const response = await fetch(`./auth.php`, {
+      const response = await fetch(`${API_BASE_URL}/auth.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -390,7 +409,7 @@ if (registerForm) {
     showLoader(true);
 
     try {
-      const response = await fetch(`./auth.php`, {
+      const response = await fetch(`${API_BASE_URL}/auth.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -430,7 +449,17 @@ if (logoutBtn) {
     taskManager.loadTasks([]);
     if (taskListContainer) taskListContainer.innerHTML = "";
     if (dashboardContainer) dashboardContainer.classList.add("hidden");
-    if (authContainer) authContainer.classList.remove("hidden");
+    if (authContainer) authContainer.classList.add("hidden");
+    
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      if (landingSection) landingSection.classList.add("hidden");
+      if (authContainer) authContainer.classList.remove("hidden");
+      const backBtn = document.getElementById("back-to-landing-btn");
+      if (backBtn) backBtn.style.display = "none";
+    } else {
+      if (landingSection) landingSection.classList.remove("hidden");
+    }
     
     clearAuthForms();
 
@@ -648,14 +677,25 @@ if (sortDeadlineBtn) {
 }
 
 /* ==========================================
-   6. DISPLAY RENDERERS
+   6. DISPLAY RENDERERS & DATE HELPERS
    ========================================== */
+function parseLocalDate(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return new Date(NaN);
+  const cleanDateStr = dateStr.split('T')[0].split(' ')[0];
+  const parts = cleanDateStr.split("-");
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    return new Date(year, month, day, 0, 0, 0, 0);
+  }
+  return new Date(dateStr);
+}
+
 function formatDate(dateString) {
   if (!dateString) return "";
-  const parts = dateString.split("-");
-  if (parts.length !== 3) return dateString;
-  
-  const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+  const dateObj = parseLocalDate(dateString);
+  if (isNaN(dateObj.getTime())) return "Invalid Date";
   return dateObj.toLocaleDateString("en-US", {
     year: 'numeric',
     month: 'long',
@@ -687,7 +727,9 @@ function isOverdue(deadlineStr, status) {
   if (status === "Completed") return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const deadline = new Date(deadlineStr);
+  const deadline = parseLocalDate(deadlineStr);
+  if (isNaN(deadline.getTime())) return false;
+  deadline.setHours(0, 0, 0, 0);
   return deadline < today;
 }
 
@@ -778,6 +820,7 @@ const MONTH_NAMES = [
 
 function populateMonthSelector(monthSelect) {
   if (!monthSelect) return;
+  const currentVal = monthSelect.value;
   monthSelect.innerHTML = `<option value="" disabled selected>Month</option>`;
   MONTH_NAMES.forEach((name, index) => {
     const monthNum = String(index + 1).padStart(2, '0');
@@ -786,10 +829,12 @@ function populateMonthSelector(monthSelect) {
     opt.textContent = name;
     monthSelect.appendChild(opt);
   });
+  if (currentVal) monthSelect.value = currentVal;
 }
 
 function populateYearSelector(yearSelect) {
   if (!yearSelect) return;
+  const currentVal = yearSelect.value;
   yearSelect.innerHTML = `<option value="" disabled selected>Year</option>`;
   const currentYear = new Date().getFullYear();
   for (let y = currentYear; y <= currentYear + 5; y++) {
@@ -798,6 +843,7 @@ function populateYearSelector(yearSelect) {
     opt.textContent = y;
     yearSelect.appendChild(opt);
   }
+  if (currentVal) yearSelect.value = currentVal;
 }
 
 function updateDays(container, targetDayVal = null) {
@@ -806,8 +852,6 @@ function updateDays(container, targetDayVal = null) {
   const yearSelect = container.querySelector(".select-year");
   if (!monthSelect || !daySelect || !yearSelect) return;
 
-  const currentSelectedDay = targetDayVal !== null ? targetDayVal : daySelect.value;
-  
   const month = parseInt(monthSelect.value, 10);
   const year = parseInt(yearSelect.value, 10);
 
@@ -816,6 +860,8 @@ function updateDays(container, targetDayVal = null) {
     const calcYear = !isNaN(year) ? year : new Date().getFullYear();
     daysInMonth = new Date(calcYear, month, 0).getDate();
   }
+
+  const currentSelectedDay = targetDayVal !== null ? targetDayVal : (daySelect.value || container.dataset.selectedDay || "");
 
   daySelect.innerHTML = `<option value="" disabled selected>Day</option>`;
   for (let i = 1; i <= daysInMonth; i++) {
@@ -827,11 +873,14 @@ function updateDays(container, targetDayVal = null) {
   }
 
   if (currentSelectedDay) {
-    const numericDay = parseInt(currentSelectedDay, 10);
+    const paddedDay = String(parseInt(currentSelectedDay, 10)).padStart(2, '0');
+    const numericDay = parseInt(paddedDay, 10);
     if (!isNaN(numericDay) && numericDay <= daysInMonth) {
-      daySelect.value = currentSelectedDay;
+      daySelect.value = paddedDay;
+      container.dataset.selectedDay = paddedDay;
     } else if (!isNaN(numericDay)) {
       daySelect.value = String(daysInMonth).padStart(2, '0');
+      container.dataset.selectedDay = daySelect.value;
     }
   }
 }
@@ -855,35 +904,30 @@ function setupTripleDateContainer(container) {
     yearSelect.addEventListener("change", () => updateDays(container));
     yearSelect.dataset.listenerAttached = "true";
   }
+
+  if (daySelect && !daySelect.dataset.listenerAttached) {
+    daySelect.addEventListener("change", () => {
+      if (daySelect.value) {
+        container.dataset.selectedDay = daySelect.value;
+      }
+    });
+    daySelect.dataset.listenerAttached = "true";
+  }
 }
 
 function getTripleDateValue(container) {
   if (!container) return "";
   const month = container.querySelector(".select-month")?.value || "";
-  const day = container.querySelector(".select-day")?.value || "";
+  let day = container.querySelector(".select-day")?.value || container.dataset.selectedDay || "";
   const year = container.querySelector(".select-year")?.value || "";
 
   if (!month || !day || !year) return "";
-  return `${year}-${month}-${day}`;
+  const paddedDay = String(parseInt(day, 10)).padStart(2, '0');
+  const paddedMonth = String(parseInt(month, 10)).padStart(2, '0');
+  return `${year}-${paddedMonth}-${paddedDay}`;
 }
 
 function setTripleDateValue(container, dateString) {
   if (!container) return;
-  const monthSelect = container.querySelector(".select-month");
-  const daySelect = container.querySelector(".select-day");
-  const yearSelect = container.querySelector(".select-year");
-
-  if (!dateString) {
-    if (monthSelect) monthSelect.value = "";
-    if (yearSelect) yearSelect.value = "";
-    updateDays(container, "");
-    return;
-  }
-
-  const parts = dateString.split("-");
-  if (parts.length === 3) {
-    if (yearSelect) yearSelect.value = parts[0];
-    if (monthSelect) monthSelect.value = parts[1];
-    updateDays(container, parts[2]);
-  }
+  // ... rest of your code
 }

@@ -3,16 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TickTask - Academic Task Manager</title>
+  <title>TickTask | Academic Task Manager</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
 </head>
 <body>
 
+  <!-- ==========================================
+      PROJECT PRESENTATION LANDING PAGE
+      ========================================== -->
+  <section id="landing-section" class="landing-section">
+    <header class="landing-header">
+      <div class="landing-logo">
+        <span class="brand-text">TickTask</span>
+      </div>
+      <nav class="landing-nav">
+        <a href="#home" class="nav-link active">HOME</a>
+        <a href="#features" class="nav-link">SYSTEM FEATURES</a>
+        <a href="#problem" class="nav-link">THE PROBLEM</a>
+        <a href="#users" class="nav-link">TARGET USERS</a>
+        <button id="enter-app-btn" class="nav-login-btn">Login / Register</button>
+      </nav>
+    </header>
+
+    <div id="home" class="landing-hero">
+      <div class="badge-pill">Web-Based Information System Project</div>
+      <h1>TickTask</h1>
+      <p class="landing-tagline">
+        Stop letting deadlines slip through the cracks. Manage all your assignments, laboratory activities, projects, quizzes, examinations, and study sessions in one centralized platform.
+      </p>
+      <div class="landing-cta-group">
+        <button id="enter-app-btn-hero" class="btn-primary" onclick="document.getElementById('enter-app-btn').click();">GET STARTED</button>
+        <a href="#architecture" class="btn-secondary">Explore Architecture</a>
+      </div>
+    </div>
+
+    <div class="landing-grid">
+      
+      <div id="problem" class="landing-card clickable-card" data-modal-target="presentation-modal" data-title="The Problem We Solve" data-content="Students struggle to keep track of academic tasks and deadlines because busy schedules cause information to scatter across different sources such as group chats, class portals, notebooks, and paper notes. Forgetting a critical task or deadline directly impacts academic responsibilities and daily schedules.">
+        <h3>The Problem We Solve</h3>
+        <p>
+          Students struggle to keep track of academic tasks and deadlines because busy schedules cause information to scatter across different sources such as group chats, class portals, notebooks, and paper notes. Forgetting a critical task or deadline directly impacts academic responsibilities and daily schedules.
+        </p>
+      </div>
+
+      <div id="users" class="landing-card clickable-card" data-modal-target="presentation-modal" data-title="Target Users" data-content="<ul><li><strong>Working and Busy Students:</strong> Individuals balancing jobs or heavy extracurricular workloads who need a quick way to track tasks on tight schedules.</li><li><strong>Students Prone to Forgetting:</strong> Learners who lose track of tasks due to stress, multitasking, or juggling multiple subjects simultaneously.</li><li><strong>College Students:</strong> Students looking for a straightforward, reliable system dedicated to managing academic milestones.</li></ul>">
+        <h3>Target Users</h3>
+        <ul>
+          <li><strong>Working and Busy Students:</strong> Individuals balancing jobs or heavy extracurricular workloads who need a quick way to track tasks on tight schedules.</li>
+          <li><strong>Students Prone to Forgetting:</strong> Learners who lose track of tasks due to stress, multitasking, or juggling multiple subjects simultaneously.</li>
+          <li><strong>College Students:</strong> Students looking for a straightforward, reliable system dedicated to managing academic milestones.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Features & Architecture Anchor Section -->
+    <div id="architecture"></div>
+    <div id="features" class="landing-features-container">
+      <h3>Core System Features & Architecture</h3>
+      <div class="landing-features-grid">
+        
+        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Centralized Authentication" data-content="Secure accounts where each user's tasks are stored separately in the database. Features isolated data persistence per user profile to protect privacy and ensure structured record management.">
+          <div class="feature-icon">🔐</div>
+          <h4>Centralized Authentication</h4>
+          <p>Secure accounts where each user's tasks are stored separately in the database.</p>
+        </div>
+
+        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Hybrid Data Structures" data-content="Dynamic arrays for sequential lists combined with Hash Maps using task map at task id for instant constant time lookups. This architecture guarantees high computational efficiency during task retrieval and modifications.">
+          <div class="feature-icon">⚡</div>
+          <h4>Hybrid Data Structures</h4>
+          <p>Dynamic arrays for sequential lists combined with Hash Maps using task map at task id for instant constant time lookups.</p>
+        </div>
+
+        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Linear Search & Filters" data-content="Quickly search keywords or filter records instantly by status, category, or priority level. Designed to filter extensive arrays dynamically without lagging the application view.">
+          <div class="feature-icon">🔍</div>
+          <h4>Linear Search & Filters</h4>
+          <p>Quickly search keywords or filter records instantly by status, category, or priority level.</p>
+        </div>
+
+        <div class="feature-card clickable-card" data-modal-target="presentation-modal" data-title="Dual-Criteria Sorting" data-content="Automatically orders tasks by deadline timestamps and priority weights where High is valued at 3, Medium is valued at 2, and Low is valued at 1. Ensures academic obligations are systematically prioritized.">
+          <div class="feature-icon">📊</div>
+          <h4>Dual-Criteria Sorting</h4>
+          <p>Automatically orders tasks by deadline timestamps and priority weights where High is valued at 3, Medium is valued at 2, and Low is valued at 1.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- AUTHENTICATION VIEW -->
-  <section id="auth-container" class="auth-section">
+  <section id="auth-container" class="auth-section hidden">
     <div class="auth-card">
+      <button id="back-to-landing-btn" class="back-link-btn">← Back to Home</button>
       <h2>TickTask</h2>
       <p>Manage your academic tasks efficiently</p>
 
@@ -167,7 +251,7 @@
 
   <!-- TASK EDIT MODAL OVERLAY -->
   <div id="edit-modal" class="modal hidden">
-    <div class="modal-content card">
+    <div class="modal-content card modal-styled">
       <h3>Edit Task</h3>
       <form id="edit-task-form">
         <input type="hidden" id="edit-task-id">
@@ -224,6 +308,16 @@
           <button type="button" id="close-modal-btn" class="btn-secondary">Cancel</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- PRESENTATION MODAL OVERLAY -->
+  <div id="presentation-modal" class="modal hidden">
+    <div class="modal-content card presentation-card modal-styled">
+      <h3 id="presentation-modal-title">Presentation Title</h3>
+      <div id="presentation-modal-body" class="presentation-body">
+        <!-- Content gets injected dynamically -->
+      </div>
     </div>
   </div>
 

@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -10,44 +10,28 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'www')));
 
-// Initialize Local SQLite Database using safe user data path for packaged builds
-const dbPath = path.join(process.env.USER_DATA_PATH || __dirname, 'ticktask.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-    }
+// Initialize Local MariaDB Connection Pool
+const db = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: 'harold', // MariaDB password for the root user
+    database: 'ticktask_db',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    dateStrings: true
 });
 
-db.serialize(() => {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            userId INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            email TEXT NOT NULL,
-            full_name TEXT NOT NULL,
-            password TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-
-    db.run(`
-        CREATE TABLE IF NOT EXISTS tasks (
-            taskId INTEGER PRIMARY KEY AUTOINCREMENT,
-            userId INTEGER NOT NULL,
-            title TEXT NOT NULL,
-            subject TEXT,
-            category TEXT,
-            priority TEXT,
-            deadline DATE,
-            description TEXT,
-            status TEXT,
-            FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
-        )
-    `);
+// Test Database Connection
+db.getConnection((err, connection) => {
+    if (err) {
+        console.error('Error connecting to MariaDB database:', err.message);
+    } else {
+        console.log('Connected to the MariaDB ticktask_db database.');
+        connection.release();
+    }
 });
 
 /* ==========================================
@@ -57,9 +41,9 @@ app.post('/auth.php', (req, res) => {
     const { action, email, password, fullName, username } = req.body;
 
     if (action === 'register') {
-        db.get('SELECT * FROM users WHERE email = ?', [email], (err, existing) => {
+        db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
-            if (existing) {
+            if (results.length > 0) {
                 return res.status(400).json({ error: 'Email is already registered.' });
             }
 
@@ -67,13 +51,13 @@ app.post('/auth.php', (req, res) => {
             const finalUsername = username || email.split('@')[0];
             const finalFullName = fullName || 'User';
 
-            db.run(
+            db.query(
                 'INSERT INTO users (username, email, full_name, password) VALUES (?, ?, ?, ?)',
                 [finalUsername, email, finalFullName, hashedPassword],
-                function (err) {
+                function (err, result) {
                     if (err) return res.status(500).json({ error: err.message });
                     return res.json({
-                        userId: this.lastID,
+                        userId: result.insertId,
                         email: email,
                         fullName: finalFullName
                     });
@@ -81,12 +65,13 @@ app.post('/auth.php', (req, res) => {
             );
         });
     } else if (action === 'login') {
-        db.get('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], (err, user) => {
+        db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
-            if (!user || !bcrypt.compareSync(password, user.password)) {
+            if (results.length === 0 || !bcrypt.compareSync(password, results[0].password)) {
                 return res.status(401).json({ error: 'Invalid email or password.' });
             }
 
+            const user = results[0];
             return res.json({
                 userId: user.userId,
                 email: user.email,
@@ -113,7 +98,7 @@ app.get('/tasks.php', (req, res) => {
 
     sql += " ORDER BY deadline ASC";
 
-    db.all(sql, params, (err, tasks) => {
+    db.query(sql, params, (err, tasks) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(tasks);
     });
@@ -141,9 +126,9 @@ app.post('/tasks.php', (req, res) => {
         data.status || 'Pending'
     ];
 
-    db.run(sql, params, function (err) {
+    db.query(sql, params, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, taskId: this.lastID });
+        res.json({ success: true, taskId: result.insertId });
     });
 });
 
@@ -170,7 +155,7 @@ app.put('/tasks.php', (req, res) => {
     params.push(data.taskId);
     const sql = `UPDATE tasks SET ${fields.join(', ')} WHERE taskId = ?`;
 
-    db.run(sql, params, (err) => {
+    db.query(sql, params, (err) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
     });
@@ -182,7 +167,7 @@ app.delete('/tasks.php', (req, res) => {
         return res.status(400).json({ error: "Missing taskId" });
     }
 
-    db.run("DELETE FROM tasks WHERE taskId = ?", [taskId], (err) => {
+    db.query("DELETE FROM tasks WHERE taskId = ?", [taskId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
     });
